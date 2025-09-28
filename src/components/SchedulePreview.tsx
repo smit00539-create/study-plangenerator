@@ -89,6 +89,8 @@ export const SchedulePreview = ({ schedule }: SchedulePreviewProps) => {
                   <TableHead>Date</TableHead>
                   <TableHead>Subjects</TableHead>
                   <TableHead>Lectures</TableHead>
+                  <TableHead>Revisions</TableHead>
+                  <TableHead>Custom Factors</TableHead>
                   <TableHead>Notes</TableHead>
                 </TableRow>
               </TableHeader>
@@ -116,6 +118,32 @@ export const SchedulePreview = ({ schedule }: SchedulePreviewProps) => {
                         ))}
                         {day.lectures.length === 0 && (
                           <span className="text-muted-foreground text-sm">No lectures</span>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="space-y-1">
+                        {day.revisions.map((revision, index) => (
+                          <div key={index} className="text-sm">
+                            <span className="font-medium text-accent">{revision.revision}</span>
+                            <span className="text-muted-foreground text-xs"> ({revision.subject})</span>
+                          </div>
+                        ))}
+                        {day.revisions.length === 0 && (
+                          <span className="text-muted-foreground text-sm">—</span>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="space-y-1">
+                        {day.custom_factors.map((factor, index) => (
+                          <div key={index} className="text-sm">
+                            <span className="font-medium text-warning">{factor.factor_name}:</span>
+                            <span className="text-muted-foreground"> {factor.value}</span>
+                          </div>
+                        ))}
+                        {day.custom_factors.length === 0 && (
+                          <span className="text-muted-foreground text-sm">—</span>
                         )}
                       </div>
                     </TableCell>

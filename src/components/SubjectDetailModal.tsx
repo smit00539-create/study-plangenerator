@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Subject, Chapter, Revision } from "@/types/studyPlan";
+import { Subject, Chapter, Revision, CustomFactor } from "@/types/studyPlan";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,7 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Trash2, BookOpen, RotateCcw } from "lucide-react";
+import { Plus, Trash2, BookOpen, RotateCcw, Settings } from "lucide-react";
 
 interface SubjectDetailModalProps {
   subject: Subject | null;
@@ -35,6 +35,27 @@ export const SubjectDetailModal = ({ subject, isOpen, onClose, onSave }: Subject
     }
     onSave(formData);
     onClose();
+  };
+
+  const addCustomFactor = () => {
+    const factorId = Date.now().toString();
+    setFormData({
+      ...formData,
+      custom_factors: [...formData.custom_factors, { id: factorId, name: "Custom Factor", value: "" }]
+    });
+  };
+
+  const updateCustomFactor = (index: number, updates: Partial<CustomFactor>) => {
+    const newFactors = [...formData.custom_factors];
+    newFactors[index] = { ...newFactors[index], ...updates };
+    setFormData({ ...formData, custom_factors: newFactors });
+  };
+
+  const removeCustomFactor = (index: number) => {
+    setFormData({
+      ...formData,
+      custom_factors: formData.custom_factors.filter((_, i) => i !== index)
+    });
   };
 
   const addChapter = () => {
@@ -121,14 +142,16 @@ export const SubjectDetailModal = ({ subject, isOpen, onClose, onSave }: Subject
                     onChange={(e) => updateChapter(index, { name: e.target.value })}
                     className="flex-1"
                   />
-                  <Input
-                    type="number"
-                    min="1"
-                    placeholder="Lectures"
-                    value={chapter.lectures_remaining}
-                    onChange={(e) => updateChapter(index, { lectures_remaining: parseInt(e.target.value) || 1 })}
-                    className="w-24"
-                  />
+                  <div className="w-24 space-y-1">
+                    <Input
+                      type="number"
+                      min="1"
+                      placeholder="Lectures"
+                      value={chapter.lectures_remaining}
+                      onChange={(e) => updateChapter(index, { lectures_remaining: parseInt(e.target.value) || 1 })}
+                    />
+                    <p className="text-xs text-muted-foreground text-center">Lectures</p>
+                  </div>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -184,6 +207,50 @@ export const SubjectDetailModal = ({ subject, isOpen, onClose, onSave }: Subject
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Add Revision Topic
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Custom Factors Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Settings className="h-5 w-5" />
+                Custom Factors
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {formData.custom_factors.map((factor, index) => (
+                <div key={factor.id} className="flex gap-2 items-center p-3 border rounded-lg bg-gradient-subtle">
+                  <Input
+                    placeholder="Factor name (e.g., Notes, Practice)"
+                    value={factor.name}
+                    onChange={(e) => updateCustomFactor(index, { name: e.target.value })}
+                    className="flex-1"
+                  />
+                  <Input
+                    placeholder="Value"
+                    value={factor.value}
+                    onChange={(e) => updateCustomFactor(index, { value: e.target.value })}
+                    className="flex-1"
+                  />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => removeCustomFactor(index)}
+                    className="text-destructive hover:bg-destructive/20"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+              <Button
+                variant="outline"
+                onClick={addCustomFactor}
+                className="w-full border-dashed hover:bg-accent/50"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Custom Factor
               </Button>
             </CardContent>
           </Card>

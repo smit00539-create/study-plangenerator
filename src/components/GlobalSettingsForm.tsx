@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
@@ -85,22 +86,25 @@ export const GlobalSettingsForm = ({ settings, onChange }: GlobalSettingsFormPro
 
         <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <Label>Subjects per Day</Label>
+            <Label htmlFor="subjects-per-day">Subjects per Day</Label>
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger>
                   <Info className="h-4 w-4 text-muted-foreground" />
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p className="max-w-xs">Two subjects per day provides focused work and better retention. Change only if you understand the tradeoffs.</p>
+                  <p className="max-w-xs">Two subjects per day provides focused work and better retention. You can adjust this based on your preferences.</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
           </div>
           <Input
-            value="2"
-            disabled
-            className="bg-muted text-muted-foreground"
+            id="subjects-per-day"
+            type="number"
+            min="1"
+            max="5"
+            value={settings.subjects_per_day}
+            onChange={(e) => updateSetting('subjects_per_day', parseInt(e.target.value) || 2)}
           />
         </div>
 
@@ -167,6 +171,20 @@ export const GlobalSettingsForm = ({ settings, onChange }: GlobalSettingsFormPro
               </SelectContent>
             </Select>
           </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="description">Custom Requirements (Description)</Label>
+          <Textarea
+            id="description"
+            placeholder="e.g., No study on Thursdays, holidays every 5th day, extra revision on weekends..."
+            value={settings.description || ""}
+            onChange={(e) => updateSetting('description', e.target.value)}
+            className="min-h-[100px]"
+          />
+          <p className="text-sm text-muted-foreground">
+            Describe any custom requirements like holidays, specific day preferences, or special scheduling needs.
+          </p>
         </div>
 
         <Separator />

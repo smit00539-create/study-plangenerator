@@ -129,6 +129,7 @@ function allocateDay(
       subjects: [],
       lectures: [],
       revisions: [],
+      custom_factors: [],
       practice_note: "Catch-up / Revision / Light practice"
     };
   }
@@ -159,6 +160,7 @@ function allocateDay(
       subjects: [],
       lectures: [],
       revisions: [],
+      custom_factors: [],
       practice_note: "Catch-up / Revision"
     };
   }
@@ -181,6 +183,7 @@ function allocateDay(
       subjects: [pair[0], pair[1]],
       lectures: [],
       revisions: [],
+      custom_factors: [],
       practice_note: "Review and practice"
     };
   }
@@ -209,12 +212,46 @@ function allocateDay(
     ...assignLecturesFromQueue(queue2, alloc2)
   ];
 
+  // Assign revisions if available
+  const revisions: Array<{subject: string, revision: string}> = [];
+  [queue1, queue2].forEach(queue => {
+    const subject = plan.subjects.find(s => s.name === queue.name);
+    if (subject && subject.revisions.length > 0) {
+      // Add one revision topic per subject if available
+      const revision = subject.revisions[dayNum % subject.revisions.length];
+      if (revision) {
+        revisions.push({
+          subject: subject.name,
+          revision: revision.name
+        });
+      }
+    }
+  });
+
+  // Assign custom factors for the subjects
+  const customFactors: Array<{subject: string, factor_name: string, value: string}> = [];
+  [queue1, queue2].forEach(queue => {
+    const subject = plan.subjects.find(s => s.name === queue.name);
+    if (subject && subject.custom_factors.length > 0) {
+      subject.custom_factors.forEach(factor => {
+        if (factor.value.trim()) {
+          customFactors.push({
+            subject: subject.name,
+            factor_name: factor.name,
+            value: factor.value
+          });
+        }
+      });
+    }
+  });
+
   return {
     day: dayNum,
     date: calculateDate(startDate, dayNum),
     subjects: [pair[0], pair[1]],
     lectures,
-    revisions: [],
+    revisions,
+    custom_factors: customFactors,
     practice_note: "Do 10–20% time for practice"
   };
 }

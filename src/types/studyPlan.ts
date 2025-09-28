@@ -9,12 +9,19 @@ export interface Revision {
   stage?: number;
 }
 
+export interface CustomFactor {
+  id: string;
+  name: string;
+  value: string;
+}
+
 export interface Subject {
   id: string;
   name: string;
   preference_weight: number;
   chapters: Chapter[];
   revisions: Revision[];
+  custom_factors: CustomFactor[];
   max_lectures_per_day?: number;
 }
 
@@ -31,6 +38,7 @@ export interface StudyPlan {
   preserve_chapter_atomicity?: boolean;
   allow_chapter_splitting?: boolean;
   pdf_theme: "simple" | "compact" | "colorful" | "print";
+  description?: string;
   subjects: Subject[];
 }
 
@@ -40,6 +48,7 @@ export interface DayPlan {
   subjects: string[];
   lectures: { subject: string; chapter: string; count: number }[];
   revisions: { subject: string; revision: string }[];
+  custom_factors: { subject: string; factor_name: string; value: string }[];
   practice_note?: string;
 }
 

@@ -234,11 +234,13 @@ function generatePDFHTML(schedule: GeneratedSchedule, plan: StudyPlan): string {
         <table class="schedule-table">
           <thead>
             <tr>
-              <th style="width: 8%;">Day</th>
-              <th style="width: 12%;">Date</th>
-              <th style="width: 20%;">Subjects</th>
-              <th style="width: 40%;">Lectures</th>
-              <th style="width: 20%;">Notes</th>
+              <th style="width: 6%;">Day</th>
+              <th style="width: 10%;">Date</th>
+              <th style="width: 15%;">Subjects</th>
+              <th style="width: 25%;">Lectures</th>
+              <th style="width: 15%;">Revisions</th>
+              <th style="width: 15%;">Custom</th>
+              <th style="width: 14%;">Notes</th>
             </tr>
           </thead>
           <tbody>
@@ -257,6 +259,18 @@ function generatePDFHTML(schedule: GeneratedSchedule, plan: StudyPlan): string {
                     </div>
                   `).join('')}
                   ${day.lectures.length === 0 ? '<em style="color: #666;">No lectures scheduled</em>' : ''}
+                </td>
+                <td style="color: #e11d48; font-size: 11px;">
+                  ${day.revisions.map(revision => `
+                    <div>${revision.revision}</div>
+                  `).join('')}
+                  ${day.revisions.length === 0 ? '—' : ''}
+                </td>
+                <td style="color: #f59e0b; font-size: 11px;">
+                  ${day.custom_factors.map(factor => `
+                    <div><strong>${factor.factor_name}:</strong> ${factor.value}</div>
+                  `).join('')}
+                  ${day.custom_factors.length === 0 ? '—' : ''}
                 </td>
                 <td style="font-style: italic; color: #666;">${day.practice_note || '—'}</td>
               </tr>
