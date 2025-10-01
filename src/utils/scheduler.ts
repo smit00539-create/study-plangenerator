@@ -129,7 +129,7 @@ function allocateDay(
       subjects: [],
       lectures: [],
       revisions: [],
-      custom_factors: [],
+      customFactors: [],
       practice_note: "Catch-up / Revision / Light practice"
     };
   }
@@ -160,7 +160,7 @@ function allocateDay(
       subjects: [],
       lectures: [],
       revisions: [],
-      custom_factors: [],
+      customFactors: [],
       practice_note: "Catch-up / Revision"
     };
   }
@@ -183,7 +183,7 @@ function allocateDay(
       subjects: [pair[0], pair[1]],
       lectures: [],
       revisions: [],
-      custom_factors: [],
+      customFactors: [],
       practice_note: "Review and practice"
     };
   }
@@ -229,18 +229,21 @@ function allocateDay(
   });
 
   // Assign custom factors for the subjects
-  const customFactors: Array<{subject: string, factor_name: string, value: string}> = [];
+  const customFactors: Array<{subject: string, factorType: string, factorName: string, value: string}> = [];
   [queue1, queue2].forEach(queue => {
     const subject = plan.subjects.find(s => s.name === queue.name);
-    if (subject && subject.custom_factors.length > 0) {
-      subject.custom_factors.forEach(factor => {
-        if (factor.value.trim()) {
-          customFactors.push({
-            subject: subject.name,
-            factor_name: factor.name,
-            value: factor.value
-          });
-        }
+    if (subject && subject.customFactorTypes.length > 0) {
+      subject.customFactorTypes.forEach(factorType => {
+        factorType.items.forEach(item => {
+          if (item.value.trim()) {
+            customFactors.push({
+              subject: subject.name,
+              factorType: factorType.typeName,
+              factorName: item.name,
+              value: item.value
+            });
+          }
+        });
       });
     }
   });
@@ -251,7 +254,7 @@ function allocateDay(
     subjects: [pair[0], pair[1]],
     lectures,
     revisions,
-    custom_factors: customFactors,
+    customFactors: customFactors,
     practice_note: "Do 10–20% time for practice"
   };
 }

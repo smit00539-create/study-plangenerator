@@ -39,7 +39,7 @@ const Index = () => {
       preference_weight: 1.0,
       chapters: [],
       revisions: [],
-      custom_factors: []
+      customFactorTypes: []
     };
     setSubjects([...subjects, newSubject]);
     setSelectedSubject(newSubject);
@@ -73,7 +73,7 @@ const Index = () => {
           { name: "P5", lectures_remaining: 2 }
         ],
         revisions: [],
-        custom_factors: []
+        customFactorTypes: []
       },
       {
         id: "2",
@@ -92,7 +92,7 @@ const Index = () => {
           { name: "C10", lectures_remaining: 2 }
         ],
         revisions: [],
-        custom_factors: []
+        customFactorTypes: []
       },
       {
         id: "3",
@@ -106,7 +106,7 @@ const Index = () => {
           { name: "M5", lectures_remaining: 3 }
         ],
         revisions: [],
-        custom_factors: []
+        customFactorTypes: []
       }
     ];
 

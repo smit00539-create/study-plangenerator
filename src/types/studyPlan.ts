@@ -9,10 +9,17 @@ export interface Revision {
   stage?: number;
 }
 
-export interface CustomFactor {
+export interface CustomFactorItem {
   id: string;
   name: string;
   value: string;
+}
+
+export interface CustomFactorType {
+  id: string;
+  typeName: string;
+  items: CustomFactorItem[];
+  maxPerDay?: number;
 }
 
 export interface Subject {
@@ -21,8 +28,9 @@ export interface Subject {
   preference_weight: number;
   chapters: Chapter[];
   revisions: Revision[];
-  custom_factors: CustomFactor[];
+  customFactorTypes: CustomFactorType[];
   max_lectures_per_day?: number;
+  max_revisions_per_day?: number;
 }
 
 export interface StudyPlan {
@@ -48,7 +56,7 @@ export interface DayPlan {
   subjects: string[];
   lectures: { subject: string; chapter: string; count: number }[];
   revisions: { subject: string; revision: string }[];
-  custom_factors: { subject: string; factor_name: string; value: string }[];
+  customFactors: { subject: string; factorType: string; factorName: string; value: string }[];
   practice_note?: string;
 }
 

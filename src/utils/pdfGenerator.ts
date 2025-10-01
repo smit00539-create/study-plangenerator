@@ -267,10 +267,10 @@ function generatePDFHTML(schedule: GeneratedSchedule, plan: StudyPlan): string {
                   ${day.revisions.length === 0 ? '—' : ''}
                 </td>
                 <td style="color: #f59e0b; font-size: 11px;">
-                  ${day.custom_factors.map(factor => `
-                    <div><strong>${factor.factor_name}:</strong> ${factor.value}</div>
+                  ${day.customFactors.map(factor => `
+                    <div><strong>${factor.factorType}:</strong> ${factor.factorName} - ${factor.value}</div>
                   `).join('')}
-                  ${day.custom_factors.length === 0 ? '—' : ''}
+                  ${day.customFactors.length === 0 ? '—' : ''}
                 </td>
                 <td style="font-style: italic; color: #666;">${day.practice_note || '—'}</td>
               </tr>

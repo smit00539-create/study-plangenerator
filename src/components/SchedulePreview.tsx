@@ -136,13 +136,13 @@ export const SchedulePreview = ({ schedule }: SchedulePreviewProps) => {
                     </TableCell>
                     <TableCell>
                       <div className="space-y-1">
-                        {day.custom_factors.map((factor, index) => (
+                        {day.customFactors.map((factor, index) => (
                           <div key={index} className="text-sm">
-                            <span className="font-medium text-warning">{factor.factor_name}:</span>
-                            <span className="text-muted-foreground"> {factor.value}</span>
+                            <span className="font-medium text-warning">{factor.factorType}:</span>
+                            <span className="text-muted-foreground"> {factor.factorName} - {factor.value}</span>
                           </div>
                         ))}
-                        {day.custom_factors.length === 0 && (
+                        {day.customFactors.length === 0 && (
                           <span className="text-muted-foreground text-sm">—</span>
                         )}
                       </div>

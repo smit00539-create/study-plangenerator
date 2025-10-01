@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Subject, Chapter, Revision, CustomFactor } from "@/types/studyPlan";
+import { Subject, Chapter, Revision, CustomFactorType, CustomFactorItem } from "@/types/studyPlan";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,17 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Trash2, BookOpen, RotateCcw, Settings } from "lucide-react";
+import { Plus, Trash2, BookOpen, RotateCcw, Settings2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface SubjectDetailModalProps {
   subject: Subject | null;
@@ -19,6 +29,8 @@ interface SubjectDetailModalProps {
 
 export const SubjectDetailModal = ({ subject, isOpen, onClose, onSave }: SubjectDetailModalProps) => {
   const [formData, setFormData] = useState<Subject | null>(null);
+  const [newFactorTypeName, setNewFactorTypeName] = useState("");
+  const [showAddFactorDialog, setShowAddFactorDialog] = useState(false);
 
   useEffect(() => {
     if (subject) {
@@ -29,32 +41,94 @@ export const SubjectDetailModal = ({ subject, isOpen, onClose, onSave }: Subject
   if (!formData) return null;
 
   const handleSave = () => {
-    if (formData.chapters.length === 0 && formData.revisions.length === 0) {
-      alert("Please add at least one chapter or revision item.");
+    if (formData.chapters.length === 0 && formData.revisions.length === 0 && formData.customFactorTypes.length === 0) {
+      alert("Please add at least one chapter, revision, or custom factor.");
       return;
     }
     onSave(formData);
     onClose();
   };
 
-  const addCustomFactor = () => {
-    const factorId = Date.now().toString();
+  const addCustomFactorType = () => {
+    if (!newFactorTypeName.trim()) {
+      alert("Please enter a factor type name");
+      return;
+    }
+    const factorTypeId = Date.now().toString();
     setFormData({
       ...formData,
-      custom_factors: [...formData.custom_factors, { id: factorId, name: "Custom Factor", value: "" }]
+      customFactorTypes: [...formData.customFactorTypes, {
+        id: factorTypeId,
+        typeName: newFactorTypeName.trim(),
+        items: [],
+        maxPerDay: undefined
+      }]
+    });
+    setNewFactorTypeName("");
+    setShowAddFactorDialog(false);
+  };
+
+  const removeCustomFactorType = (factorTypeId: string) => {
+    setFormData({
+      ...formData,
+      customFactorTypes: formData.customFactorTypes.filter(ft => ft.id !== factorTypeId)
     });
   };
 
-  const updateCustomFactor = (index: number, updates: Partial<CustomFactor>) => {
-    const newFactors = [...formData.custom_factors];
-    newFactors[index] = { ...newFactors[index], ...updates };
-    setFormData({ ...formData, custom_factors: newFactors });
-  };
-
-  const removeCustomFactor = (index: number) => {
+  const updateCustomFactorType = (factorTypeId: string, updates: Partial<CustomFactorType>) => {
     setFormData({
       ...formData,
-      custom_factors: formData.custom_factors.filter((_, i) => i !== index)
+      customFactorTypes: formData.customFactorTypes.map(ft =>
+        ft.id === factorTypeId ? { ...ft, ...updates } : ft
+      )
+    });
+  };
+
+  const addItemToFactorType = (factorTypeId: string) => {
+    setFormData({
+      ...formData,
+      customFactorTypes: formData.customFactorTypes.map(ft => {
+        if (ft.id === factorTypeId) {
+          const itemId = Date.now().toString();
+          return {
+            ...ft,
+            items: [...ft.items, { id: itemId, name: "Item", value: "" }]
+          };
+        }
+        return ft;
+      })
+    });
+  };
+
+  const updateFactorItem = (factorTypeId: string, itemId: string, updates: Partial<CustomFactorItem>) => {
+    setFormData({
+      ...formData,
+      customFactorTypes: formData.customFactorTypes.map(ft => {
+        if (ft.id === factorTypeId) {
+          return {
+            ...ft,
+            items: ft.items.map(item =>
+              item.id === itemId ? { ...item, ...updates } : item
+            )
+          };
+        }
+        return ft;
+      })
+    });
+  };
+
+  const removeFactorItem = (factorTypeId: string, itemId: string) => {
+    setFormData({
+      ...formData,
+      customFactorTypes: formData.customFactorTypes.map(ft => {
+        if (ft.id === factorTypeId) {
+          return {
+            ...ft,
+            items: ft.items.filter(item => item.id !== itemId)
+          };
+        }
+        return ft;
+      })
     });
   };
 
@@ -107,204 +181,304 @@ export const SubjectDetailModal = ({ subject, isOpen, onClose, onSave }: Subject
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-xl font-semibold">Subject Details</DialogTitle>
-        </DialogHeader>
-        
-        <div className="space-y-6">
-          {/* Subject Name */}
-          <div className="space-y-2">
-            <Label htmlFor="subject-name">Subject Name</Label>
-            <Input
-              id="subject-name"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="bg-background"
-            />
-          </div>
+    <>
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold">Subject Details</DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-6">
+            {/* Subject Name */}
+            <div className="space-y-2">
+              <Label htmlFor="subject-name">Subject Name</Label>
+              <Input
+                id="subject-name"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                className="bg-background"
+              />
+            </div>
 
-          {/* Chapters Section */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <BookOpen className="h-5 w-5" />
-                Chapters
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {formData.chapters.map((chapter, index) => (
-                <div key={index} className="flex gap-2 items-center p-3 border rounded-lg bg-gradient-subtle">
-                  <Input
-                    placeholder="Chapter name"
-                    value={chapter.name}
-                    onChange={(e) => updateChapter(index, { name: e.target.value })}
-                    className="flex-1"
-                  />
-                  <div className="w-24 space-y-1">
+            {/* Chapters Section */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <BookOpen className="h-5 w-5" />
+                    Chapters
+                  </CardTitle>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Label htmlFor="max-lectures">Max per day:</Label>
                     <Input
+                      id="max-lectures"
                       type="number"
                       min="1"
-                      placeholder="Lectures"
-                      value={chapter.lectures_remaining}
-                      onChange={(e) => updateChapter(index, { lectures_remaining: parseInt(e.target.value) || 1 })}
+                      placeholder="No limit"
+                      value={formData.max_lectures_per_day || ""}
+                      onChange={(e) => setFormData({ 
+                        ...formData, 
+                        max_lectures_per_day: e.target.value ? parseInt(e.target.value) : undefined 
+                      })}
+                      className="w-20 h-8"
                     />
-                    <p className="text-xs text-muted-foreground text-center">Lectures</p>
                   </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {formData.chapters.map((chapter, index) => (
+                  <div key={index} className="flex gap-2 items-center p-3 border rounded-lg bg-gradient-subtle">
+                    <Input
+                      placeholder="Chapter name"
+                      value={chapter.name}
+                      onChange={(e) => updateChapter(index, { name: e.target.value })}
+                      className="flex-1"
+                    />
+                    <div className="w-24 space-y-1">
+                      <Input
+                        type="number"
+                        min="1"
+                        placeholder="Lectures"
+                        value={chapter.lectures_remaining}
+                        onChange={(e) => updateChapter(index, { lectures_remaining: parseInt(e.target.value) || 1 })}
+                      />
+                      <p className="text-xs text-muted-foreground text-center">Lectures</p>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeChapter(index)}
+                      className="text-destructive hover:bg-destructive/20"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+                <Button
+                  variant="outline"
+                  onClick={addChapter}
+                  className="w-full border-dashed hover:bg-accent/50"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Chapter
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Revisions Section */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <RotateCcw className="h-5 w-5" />
+                    Revisions
+                  </CardTitle>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Label htmlFor="max-revisions">Max per day:</Label>
+                    <Input
+                      id="max-revisions"
+                      type="number"
+                      min="1"
+                      placeholder="No limit"
+                      value={formData.max_revisions_per_day || ""}
+                      onChange={(e) => setFormData({ 
+                        ...formData, 
+                        max_revisions_per_day: e.target.value ? parseInt(e.target.value) : undefined 
+                      })}
+                      className="w-20 h-8"
+                    />
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {formData.revisions.map((revision, index) => (
+                  <div key={index} className="flex gap-2 items-center p-3 border rounded-lg bg-gradient-subtle">
+                    <Input
+                      placeholder="Revision topic"
+                      value={revision.name}
+                      onChange={(e) => updateRevision(index, { name: e.target.value })}
+                      className="flex-1"
+                    />
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeRevision(index)}
+                      className="text-destructive hover:bg-destructive/20"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+                <Button
+                  variant="outline"
+                  onClick={addRevision}
+                  className="w-full border-dashed hover:bg-accent/50"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Revision Topic
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Custom Factor Types Section */}
+            {formData.customFactorTypes.map((factorType) => (
+              <Card key={factorType.id}>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="flex items-center gap-2 text-lg">
+                      <Settings2 className="h-5 w-5" />
+                      {factorType.typeName}
+                    </CardTitle>
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Label htmlFor={`max-${factorType.id}`}>Max per day:</Label>
+                        <Input
+                          id={`max-${factorType.id}`}
+                          type="number"
+                          min="1"
+                          placeholder="No limit"
+                          value={factorType.maxPerDay || ""}
+                          onChange={(e) => updateCustomFactorType(factorType.id, { 
+                            maxPerDay: e.target.value ? parseInt(e.target.value) : undefined 
+                          })}
+                          className="w-20 h-8"
+                        />
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeCustomFactorType(factorType.id)}
+                        className="text-destructive hover:bg-destructive/20"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {factorType.items.map((item) => (
+                    <div key={item.id} className="flex gap-2 items-center p-3 border rounded-lg bg-gradient-subtle">
+                      <Input
+                        placeholder="Item name"
+                        value={item.name}
+                        onChange={(e) => updateFactorItem(factorType.id, item.id, { name: e.target.value })}
+                        className="flex-1"
+                      />
+                      <Input
+                        placeholder="Value/Details"
+                        value={item.value}
+                        onChange={(e) => updateFactorItem(factorType.id, item.id, { value: e.target.value })}
+                        className="flex-1"
+                      />
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeFactorItem(factorType.id, item.id)}
+                        className="text-destructive hover:bg-destructive/20"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
                   <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => removeChapter(index)}
-                    className="text-destructive hover:bg-destructive/20"
+                    variant="outline"
+                    onClick={() => addItemToFactorType(factorType.id)}
+                    className="w-full border-dashed hover:bg-accent/50"
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add {factorType.typeName} Item
                   </Button>
-                </div>
-              ))}
-              <Button
-                variant="outline"
-                onClick={addChapter}
-                className="w-full border-dashed hover:bg-accent/50"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add Chapter
-              </Button>
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
+            ))}
 
-          {/* Revisions Section */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <RotateCcw className="h-5 w-5" />
-                Revisions
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {formData.revisions.map((revision, index) => (
-                <div key={index} className="flex gap-2 items-center p-3 border rounded-lg bg-gradient-subtle">
-                  <Input
-                    placeholder="Revision topic"
-                    value={revision.name}
-                    onChange={(e) => updateRevision(index, { name: e.target.value })}
-                    className="flex-1"
-                  />
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => removeRevision(index)}
-                    className="text-destructive hover:bg-destructive/20"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))}
-              <Button
-                variant="outline"
-                onClick={addRevision}
-                className="w-full border-dashed hover:bg-accent/50"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add Revision Topic
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Custom Factors Section */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Settings className="h-5 w-5" />
-                Custom Factors
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {formData.custom_factors.map((factor, index) => (
-                <div key={factor.id} className="flex gap-2 items-center p-3 border rounded-lg bg-gradient-subtle">
-                  <Input
-                    placeholder="Factor name (e.g., Notes, Practice)"
-                    value={factor.name}
-                    onChange={(e) => updateCustomFactor(index, { name: e.target.value })}
-                    className="flex-1"
-                  />
-                  <Input
-                    placeholder="Value"
-                    value={factor.value}
-                    onChange={(e) => updateCustomFactor(index, { value: e.target.value })}
-                    className="flex-1"
-                  />
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => removeCustomFactor(index)}
-                    className="text-destructive hover:bg-destructive/20"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))}
-              <Button
-                variant="outline"
-                onClick={addCustomFactor}
-                className="w-full border-dashed hover:bg-accent/50"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add Custom Factor
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Priority Settings */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Priority Settings</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label htmlFor="priority-toggle">Mark as priority subject</Label>
-                  <p className="text-sm text-muted-foreground">Sets weight to 1.4x for more scheduling priority</p>
-                </div>
-                <Switch
-                  id="priority-toggle"
-                  checked={formData.preference_weight >= 1.4}
-                  onCheckedChange={handlePriorityToggle}
-                />
-              </div>
-              
-              <Separator />
-              
-              <div className="space-y-2">
-                <Label>Preference Weight: {formData.preference_weight.toFixed(1)}x</Label>
-                <Slider
-                  value={[formData.preference_weight]}
-                  onValueChange={([value]) => setFormData({ ...formData, preference_weight: value })}
-                  min={0.5}
-                  max={2.0}
-                  step={0.1}
-                  className="w-full"
-                />
-                <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>0.5x (Low)</span>
-                  <span>1.0x (Normal)</span>
-                  <span>2.0x (High)</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Action Buttons */}
-          <div className="flex justify-end gap-2 pt-4 border-t">
-            <Button variant="outline" onClick={onClose}>
-              Cancel
+            {/* Add Custom Factor Type Button */}
+            <Button
+              variant="outline"
+              onClick={() => setShowAddFactorDialog(true)}
+              className="w-full border-dashed border-2 hover:bg-accent/50 py-6"
+            >
+              <Plus className="h-5 w-5 mr-2" />
+              Add Custom Factor Type (e.g., Notes, Questions, Practice)
             </Button>
-            <Button onClick={handleSave} className="bg-gradient-primary">
-              Save Subject
-            </Button>
+
+            {/* Priority Settings */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Priority Settings</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label htmlFor="priority-toggle">Mark as priority subject</Label>
+                    <p className="text-sm text-muted-foreground">Sets weight to 1.4x for more scheduling priority</p>
+                  </div>
+                  <Switch
+                    id="priority-toggle"
+                    checked={formData.preference_weight >= 1.4}
+                    onCheckedChange={handlePriorityToggle}
+                  />
+                </div>
+                
+                <Separator />
+                
+                <div className="space-y-2">
+                  <Label>Preference Weight: {formData.preference_weight.toFixed(1)}x</Label>
+                  <Slider
+                    value={[formData.preference_weight]}
+                    onValueChange={([value]) => setFormData({ ...formData, preference_weight: value })}
+                    min={0.5}
+                    max={2.0}
+                    step={0.1}
+                    className="w-full"
+                  />
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>0.5x (Low)</span>
+                    <span>1.0x (Normal)</span>
+                    <span>2.0x (High)</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Action Buttons */}
+            <div className="flex justify-end gap-2 pt-4 border-t">
+              <Button variant="outline" onClick={onClose}>
+                Cancel
+              </Button>
+              <Button onClick={handleSave} className="bg-gradient-primary">
+                Save Subject
+              </Button>
+            </div>
           </div>
-        </div>
-      </DialogContent>
-    </Dialog>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Factor Type Dialog */}
+      <AlertDialog open={showAddFactorDialog} onOpenChange={setShowAddFactorDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Add Custom Factor Type</AlertDialogTitle>
+            <AlertDialogDescription>
+              Enter a name for the new factor type (e.g., "Notes", "Questions", "Practice Problems")
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <Input
+            placeholder="Factor type name"
+            value={newFactorTypeName}
+            onChange={(e) => setNewFactorTypeName(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                addCustomFactorType();
+              }
+            }}
+          />
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setNewFactorTypeName("")}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={addCustomFactorType}>Add Factor Type</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 };
