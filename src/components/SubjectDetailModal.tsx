@@ -208,21 +208,15 @@ export const SubjectDetailModal = ({ subject, isOpen, onClose, onSave }: Subject
                     <BookOpen className="h-5 w-5" />
                     Chapters
                   </CardTitle>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Label htmlFor="max-lectures">Max per day:</Label>
-                    <Input
-                      id="max-lectures"
-                      type="number"
-                      min="1"
-                      placeholder="No limit"
-                      value={formData.max_lectures_per_day || ""}
-                      onChange={(e) => setFormData({ 
-                        ...formData, 
-                        max_lectures_per_day: e.target.value ? parseInt(e.target.value) : undefined 
-                      })}
-                      className="w-20 h-8"
-                    />
-                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setFormData({ ...formData, chapters: [] })}
+                    className="text-destructive hover:bg-destructive/20"
+                  >
+                    <Trash2 className="h-4 w-4 mr-1" />
+                    Remove Factor
+                  </Button>
                 </div>
               </CardHeader>
               <CardContent className="space-y-3">
@@ -273,21 +267,15 @@ export const SubjectDetailModal = ({ subject, isOpen, onClose, onSave }: Subject
                     <RotateCcw className="h-5 w-5" />
                     Revisions
                   </CardTitle>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Label htmlFor="max-revisions">Max per day:</Label>
-                    <Input
-                      id="max-revisions"
-                      type="number"
-                      min="1"
-                      placeholder="No limit"
-                      value={formData.max_revisions_per_day || ""}
-                      onChange={(e) => setFormData({ 
-                        ...formData, 
-                        max_revisions_per_day: e.target.value ? parseInt(e.target.value) : undefined 
-                      })}
-                      className="w-20 h-8"
-                    />
-                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setFormData({ ...formData, revisions: [] })}
+                    className="text-destructive hover:bg-destructive/20"
+                  >
+                    <Trash2 className="h-4 w-4 mr-1" />
+                    Remove Factor
+                  </Button>
                 </div>
               </CardHeader>
               <CardContent className="space-y-3">
@@ -324,35 +312,20 @@ export const SubjectDetailModal = ({ subject, isOpen, onClose, onSave }: Subject
             {formData.customFactorTypes.map((factorType) => (
               <Card key={factorType.id}>
                 <CardHeader>
-                  <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between">
                     <CardTitle className="flex items-center gap-2 text-lg">
                       <Settings2 className="h-5 w-5" />
                       {factorType.typeName}
                     </CardTitle>
-                    <div className="flex items-center gap-2">
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Label htmlFor={`max-${factorType.id}`}>Max per day:</Label>
-                        <Input
-                          id={`max-${factorType.id}`}
-                          type="number"
-                          min="1"
-                          placeholder="No limit"
-                          value={factorType.maxPerDay || ""}
-                          onChange={(e) => updateCustomFactorType(factorType.id, { 
-                            maxPerDay: e.target.value ? parseInt(e.target.value) : undefined 
-                          })}
-                          className="w-20 h-8"
-                        />
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeCustomFactorType(factorType.id)}
-                        className="text-destructive hover:bg-destructive/20"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeCustomFactorType(factorType.id)}
+                      className="text-destructive hover:bg-destructive/20"
+                    >
+                      <Trash2 className="h-4 w-4 mr-1" />
+                      Remove Factor
+                    </Button>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-3">

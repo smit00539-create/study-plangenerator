@@ -1,4 +1,4 @@
-import { StudyPlan } from "@/types/studyPlan";
+import { StudyPlan, Subject } from "@/types/studyPlan";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,15 +9,16 @@ import { Separator } from "@/components/ui/separator";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
 import { Settings, ChevronDown, Info } from "lucide-react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface GlobalSettingsFormProps {
   settings: Omit<StudyPlan, 'subjects'>;
   onChange: (settings: Omit<StudyPlan, 'subjects'>) => void;
+  subjects: Subject[];
 }
 
-export const GlobalSettingsForm = ({ settings, onChange }: GlobalSettingsFormProps) => {
+export const GlobalSettingsForm = ({ settings, onChange, subjects }: GlobalSettingsFormProps) => {
   const [advancedOpen, setAdvancedOpen] = useState(false);
 
   const updateSetting = <K extends keyof Omit<StudyPlan, 'subjects'>>(
@@ -26,6 +27,32 @@ export const GlobalSettingsForm = ({ settings, onChange }: GlobalSettingsFormPro
   ) => {
     onChange({ ...settings, [key]: value });
   };
+
+  // Collect all unique factor types from all subjects
+  const allFactorTypes = useMemo(() => {
+    const types = new Set<string>();
+    let hasChapters = false;
+    let hasRevisions = false;
+    const customTypes: { name: string; id?: string }[] = [];
+
+    subjects.forEach(subject => {
+      if (subject.chapters.length > 0) hasChapters = true;
+      if (subject.revisions.length > 0) hasRevisions = true;
+      subject.customFactorTypes.forEach(cft => {
+        if (!types.has(cft.typeName)) {
+          types.add(cft.typeName);
+          customTypes.push({ name: cft.typeName, id: cft.id });
+        }
+      });
+    });
+
+    const result = [];
+    if (hasChapters) result.push({ name: 'Chapters', key: 'max_lectures_per_day' });
+    if (hasRevisions) result.push({ name: 'Revisions', key: 'max_revisions_per_day' });
+    customTypes.forEach(ct => result.push({ name: ct.name, key: `max_${ct.name.toLowerCase().replace(/\s+/g, '_')}_per_day` }));
+    
+    return result;
+  }, [subjects]);
 
   return (
     <Card>
@@ -59,7 +86,7 @@ export const GlobalSettingsForm = ({ settings, onChange }: GlobalSettingsFormPro
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
           <div className="space-y-2">
             <Label htmlFor="duration">Target Duration (days)</Label>
             <Input
@@ -70,19 +97,35 @@ export const GlobalSettingsForm = ({ settings, onChange }: GlobalSettingsFormPro
               onChange={(e) => updateSetting('duration_days', parseInt(e.target.value) || 30)}
             />
           </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="max-lectures">Max Lectures per Day</Label>
-            <Input
-              id="max-lectures"
-              type="number"
-              min="1"
-              max="10"
-              value={settings.max_lectures_per_day}
-              onChange={(e) => updateSetting('max_lectures_per_day', parseInt(e.target.value) || 3)}
-            />
-          </div>
         </div>
+
+        {/* Factor Constraints Section */}
+        {allFactorTypes.length > 0 && (
+          <>
+            <Separator />
+            <div className="space-y-4">
+              <h3 className="font-medium">Factor Constraints (Max per Day)</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {allFactorTypes.map((factor) => (
+                  <div key={factor.key} className="space-y-2">
+                    <Label htmlFor={factor.key}>Max {factor.name} per Day</Label>
+                    <Input
+                      id={factor.key}
+                      type="number"
+                      min="1"
+                      placeholder="No limit"
+                      value={(settings as any)[factor.key] || ""}
+                      onChange={(e) => updateSetting(
+                        factor.key as any, 
+                        e.target.value ? parseInt(e.target.value) : undefined
+                      )}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
 
         <div className="space-y-2">
           <div className="flex items-center gap-2">

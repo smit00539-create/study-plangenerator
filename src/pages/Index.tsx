@@ -290,10 +290,11 @@ const Index = () => {
             </Card>
 
             {/* Global Settings */}
-            <GlobalSettingsForm
-              settings={globalSettings}
-              onChange={setGlobalSettings}
-            />
+        <GlobalSettingsForm
+          settings={globalSettings}
+          onChange={setGlobalSettings}
+          subjects={subjects}
+        />
 
             {/* Action Buttons */}
             <div className="flex gap-3">
