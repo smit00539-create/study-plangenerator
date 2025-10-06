@@ -47,7 +47,7 @@ export const GlobalSettingsForm = ({ settings, onChange, subjects }: GlobalSetti
     });
 
     const result = [];
-    if (hasChapters) result.push({ name: 'Chapters', key: 'max_lectures_per_day' });
+    if (hasChapters) result.push({ name: 'Lectures', key: 'max_lectures_per_day' });
     if (hasRevisions) result.push({ name: 'Revisions', key: 'max_revisions_per_day' });
     customTypes.forEach(ct => result.push({ name: ct.name, key: `max_${ct.name.toLowerCase().replace(/\s+/g, '_')}_per_day` }));
     
@@ -151,6 +151,20 @@ export const GlobalSettingsForm = ({ settings, onChange, subjects }: GlobalSetti
           />
         </div>
 
+        <div className="space-y-2">
+          <Label htmlFor="description">Custom Requirements (Description)</Label>
+          <Textarea
+            id="description"
+            placeholder="e.g., No study on Thursdays, holidays every 5th day, extra revision on weekends..."
+            value={settings.description || ""}
+            onChange={(e) => updateSetting('description', e.target.value)}
+            className="min-h-[100px]"
+          />
+          <p className="text-sm text-muted-foreground">
+            Describe any custom requirements like holidays, specific day preferences, or special scheduling needs.
+          </p>
+        </div>
+
         <Separator />
 
         {/* Scheduling Preferences */}
@@ -214,20 +228,6 @@ export const GlobalSettingsForm = ({ settings, onChange, subjects }: GlobalSetti
               </SelectContent>
             </Select>
           </div>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="description">Custom Requirements (Description)</Label>
-          <Textarea
-            id="description"
-            placeholder="e.g., No study on Thursdays, holidays every 5th day, extra revision on weekends..."
-            value={settings.description || ""}
-            onChange={(e) => updateSetting('description', e.target.value)}
-            className="min-h-[100px]"
-          />
-          <p className="text-sm text-muted-foreground">
-            Describe any custom requirements like holidays, specific day preferences, or special scheduling needs.
-          </p>
         </div>
 
         <Separator />

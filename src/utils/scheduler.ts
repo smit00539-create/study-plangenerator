@@ -18,14 +18,14 @@ export function generateSchedule(plan: StudyPlan): GeneratedSchedule {
     throw new Error("Please add chapters with lectures to schedule.");
   }
 
-  // Step 2: Prepare per-subject queues
+  // Step 2: Prepare per-subject queues with deep copies to avoid mutation
   const subjectQueues: SubjectQueue[] = plan.subjects.map(subject => ({
     id: subject.id,
     name: subject.name,
     weight: plan.distribution_mode === "auto" ? 
       subject.preference_weight * subject.chapters.reduce((sum, ch) => sum + ch.lectures_remaining, 0) :
       subject.preference_weight,
-    chapters: [...subject.chapters],
+    chapters: subject.chapters.map(ch => ({ ...ch })), // Deep copy chapters
     remaining: subject.chapters.reduce((sum, chapter) => sum + chapter.lectures_remaining, 0)
   })).filter(queue => queue.remaining > 0);
 
@@ -129,8 +129,7 @@ function allocateDay(
       subjects: [],
       lectures: [],
       revisions: [],
-      customFactors: [],
-      practice_note: "Catch-up / Revision / Light practice"
+      customFactors: []
     };
   }
 
@@ -166,8 +165,7 @@ function allocateDay(
       subjects: [],
       lectures: [],
       revisions: [],
-      customFactors: [],
-      practice_note: "Catch-up / Revision"
+      customFactors: []
     };
   }
 
@@ -188,8 +186,7 @@ function allocateDay(
       subjects: selectedSubjects,
       lectures: [],
       revisions: [],
-      customFactors: [],
-      practice_note: "Review and practice"
+      customFactors: []
     };
   }
 
@@ -277,8 +274,7 @@ function allocateDay(
     subjects: selectedSubjects,
     lectures,
     revisions,
-    customFactors: customFactors,
-    practice_note: "Do 10–20% time for practice"
+    customFactors: customFactors
   };
 }
 

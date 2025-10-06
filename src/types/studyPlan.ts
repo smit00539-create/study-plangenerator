@@ -57,7 +57,6 @@ export interface DayPlan {
   lectures: { subject: string; chapter: string; count: number }[];
   revisions: { subject: string; revision: string }[];
   customFactors: { subject: string; factorType: string; factorName: string; value: string }[];
-  practice_note?: string;
 }
 
 export interface GeneratedSchedule {

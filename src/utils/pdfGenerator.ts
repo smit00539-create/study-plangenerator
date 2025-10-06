@@ -234,13 +234,12 @@ function generatePDFHTML(schedule: GeneratedSchedule, plan: StudyPlan): string {
         <table class="schedule-table">
           <thead>
             <tr>
-              <th style="width: 6%;">Day</th>
-              <th style="width: 10%;">Date</th>
-              <th style="width: 15%;">Subjects</th>
-              <th style="width: 25%;">Lectures</th>
-              <th style="width: 15%;">Revisions</th>
-              <th style="width: 15%;">Custom</th>
-              <th style="width: 14%;">Notes</th>
+              <th style="width: 8%;">Day</th>
+              <th style="width: 12%;">Date</th>
+              <th style="width: 18%;">Subjects</th>
+              <th style="width: 30%;">Lectures</th>
+              <th style="width: 16%;">Revisions</th>
+              <th style="width: 16%;">Custom</th>
             </tr>
           </thead>
           <tbody>
@@ -272,7 +271,6 @@ function generatePDFHTML(schedule: GeneratedSchedule, plan: StudyPlan): string {
                   `).join('')}
                   ${day.customFactors.length === 0 ? '—' : ''}
                 </td>
-                <td style="font-style: italic; color: #666;">${day.practice_note || '—'}</td>
               </tr>
             `).join('')}
           </tbody>

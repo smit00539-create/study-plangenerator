@@ -91,7 +91,6 @@ export const SchedulePreview = ({ schedule }: SchedulePreviewProps) => {
                   <TableHead>Lectures</TableHead>
                   <TableHead>Revisions</TableHead>
                   <TableHead>Custom Factors</TableHead>
-                  <TableHead>Notes</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -146,9 +145,6 @@ export const SchedulePreview = ({ schedule }: SchedulePreviewProps) => {
                           <span className="text-muted-foreground text-sm">—</span>
                         )}
                       </div>
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {day.practice_note}
                     </TableCell>
                   </TableRow>
                 ))}
