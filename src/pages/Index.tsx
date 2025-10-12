@@ -5,10 +5,11 @@ import { AddSubjectForm } from "@/components/AddSubjectForm";
 import { SubjectDetailModal } from "@/components/SubjectDetailModal";
 import { GlobalSettingsForm } from "@/components/GlobalSettingsForm";
 import { SchedulePreview } from "@/components/SchedulePreview";
+import { AIDataExtractor } from "@/components/AIDataExtractor";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Calendar, Download, Eye, GraduationCap, AlertTriangle, Zap } from "lucide-react";
+import { Calendar, Download, Eye, GraduationCap, AlertTriangle, Zap, Sparkles } from "lucide-react";
 import { generateSchedule } from "@/utils/scheduler";
 import { generatePDF } from "@/utils/pdfGenerator";
 import { useToast } from "@/hooks/use-toast";
@@ -20,6 +21,7 @@ const Index = () => {
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [schedule, setSchedule] = useState<GeneratedSchedule | null>(null);
+  const [showAIExtractor, setShowAIExtractor] = useState(false);
   
   const [globalSettings, setGlobalSettings] = useState<Omit<StudyPlan, 'subjects'>>({
     duration_days: 30,
@@ -57,6 +59,15 @@ const Index = () => {
 
   const deleteSubject = (subjectId: string) => {
     setSubjects(subjects.filter(s => s.id !== subjectId));
+  };
+
+  const handleAIDataExtracted = (extractedSubjects: Subject[]) => {
+    setSubjects(extractedSubjects);
+    setShowAIExtractor(false);
+    toast({
+      title: "Data imported successfully!",
+      description: `Added ${extractedSubjects.length} subject(s) to your study plan.`,
+    });
   };
 
   const loadExampleData = () => {
@@ -274,20 +285,38 @@ const Index = () => {
                   <div className="text-center py-8 text-muted-foreground">
                     <GraduationCap className="h-12 w-12 mx-auto mb-3 opacity-50" />
                     <p>No subjects added yet</p>
-                    <p className="text-sm mb-4">Start by adding your first subject above</p>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={loadExampleData}
-                      className="mx-auto hover:bg-accent/50"
-                    >
-                      <Zap className="h-4 w-4 mr-2" />
-                      Load Example Data
-                    </Button>
+                    <p className="text-sm mb-4">Start by adding your first subject above or use AI to extract data</p>
+                    <div className="flex gap-2 justify-center">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setShowAIExtractor(true)}
+                      >
+                        <Sparkles className="h-4 w-4 mr-2" />
+                        Extract with AI
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={loadExampleData}
+                        className="mx-auto hover:bg-accent/50"
+                      >
+                        <Zap className="h-4 w-4 mr-2" />
+                        Load Example Data
+                      </Button>
+                    </div>
                   </div>
                 )}
               </CardContent>
             </Card>
+
+            {/* AI Data Extractor */}
+            {showAIExtractor && (
+              <AIDataExtractor
+                onDataExtracted={handleAIDataExtracted}
+                onCancel={() => setShowAIExtractor(false)}
+              />
+            )}
 
             {/* Global Settings */}
         <GlobalSettingsForm
