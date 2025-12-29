@@ -55,10 +55,12 @@ export const GlobalSettingsForm = ({ settings, onChange, subjects }: GlobalSetti
   }, [subjects]);
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Settings className="h-5 w-5" />
+    <Card className="card-elevated border-border/50">
+      <CardHeader className="pb-4">
+        <CardTitle className="flex items-center gap-3 font-display">
+          <div className="p-2 bg-primary/10 rounded-lg">
+            <Settings className="h-5 w-5 text-primary" />
+          </div>
           Global Settings
         </CardTitle>
       </CardHeader>
